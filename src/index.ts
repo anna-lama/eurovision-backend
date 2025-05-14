@@ -5,12 +5,14 @@ import autoLoad from "@fastify/autoload";
 import {join} from "path";
 import fastifyCors from '@fastify/cors';
 import fastifySwagger from "@fastify/swagger";
+import {fastifySwaggerUi, FastifySwaggerUiOptions} from "@fastify/swagger-ui";
+
+
 
 const corsOptions = {
   origin: '*'
 };
 // Import it this way to benefit from TypeScript typings
-import fastifyCron from 'fastify-cron'
 export const AppDataSource = new DataSource(ormconfig)
 
 const FASTIFY_PORT = Number(process.env.FASTIFY_PORT) || 3006;
@@ -33,31 +35,17 @@ const start = async ():Promise<void> => {
       }
     }
 
+    await app.register(fastifySwaggerUi, {
+      routePrefix: '/docs',
+      exposeRoute: true,
+    } as FastifySwaggerUiOptions);
+
+
     await app.register(autoLoad, {
       dir: join(__dirname, 'plugins'),
       ignorePattern: /.*\.ignore.*/
     });
 
-    // Middleware: Router
-    // await app.register(router);
-
-    //Registrazione dei CRON
-    app.register(fastifyCron, {
-      jobs: [
-        // {
-        // Only these two properties are required,
-        // the rest is from the node-cron API:
-        // https://github.com/kelektiv/node-cron#api
-        //  cronTime: '0 0 * * *', // Everyday at midnight UTC
-
-        // Note: the callbacks (onTick & onComplete) take the server
-        // as an argument, as opposed to nothing in the node-cron API:
-        //  onTick: async server => {
-        //    await server.db.runSomeCleanupTask()
-        //  }
-        // }
-      ]
-    })
 
     // Carica automaticamente le rotte dalla cartella "routes"
     await app.register(autoLoad, {
@@ -72,7 +60,6 @@ const start = async ():Promise<void> => {
       host:'::',
       listenTextResolver: (address) => { return `Prometheus metrics server is listening at ${address}`}
     });
-    app.cron.startAllJobs()
     console.log(`🚀  Fastify server running on port ${FASTIFY_PORT}`);
   } catch (err) {
     console.error('Error starting server:', err);
