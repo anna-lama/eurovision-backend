@@ -3,6 +3,12 @@ import {Punteggio} from "../models/entity/Punteggio";
 import {Utente} from "../models/entity/Utente";
 import {Esibizione} from "../models/entity/Esibizione";
 import ErrorApi from "../@types/interface/errorApi";
+import {Config} from "../models/entity/Config";
+
+interface Totale {
+    votanti: number,
+    classifica: Calcoli[]
+}
 
 interface Calcoli {
     esibizione: Esibizione,
@@ -46,12 +52,27 @@ export async function calcolaClassificaPersonale (userID : number) {
 }
 
 
-export async function calcolaClassificaTotale () {
-    const punteggioRepo = await AppDataSource.getRepository(Punteggio).find({
-        relations:["esibizione"]
-    });
+export async function calcolaClassificaTotale () : Promise<Totale> {
+    const check = await AppDataSource.getRepository(Config).findOne({where: {id : 1}})
+    if (!check) {
+        return { votanti : 0, classifica : []}
+    }
+    const votanti = await AppDataSource.getRepository(Utente).count({
+            where: {
+                allInserted: true
+            }
+        }
+    )
+    const punteggiValidi = await AppDataSource.createQueryBuilder(Punteggio, 'p')
+        .leftJoinAndSelect('p.esibizione', 'es')
+        .leftJoinAndSelect('p.utente', 'u')
+        .where('u."allInserted" = TRUE')
+        .getMany()
 
-    return aggregaPunteggi(punteggioRepo)
+    return {
+        votanti : votanti,
+        classifica: aggregaPunteggi(punteggiValidi).sort((a,b) => b.totale - a.totale)
+    }
 
 }
 
@@ -90,8 +111,7 @@ export async function getHomeList (userID : number) {
 
     const utente = await utenteRepo.findOneBy({id: userID});
     if (!utente) {
-        console.error("Utente non trovato.");
-        return null;
+        throw new ErrorApi('L\'utente non è stato trovato', 400, "DANNO ESTERNO")
     }
     const esibizioni = await AppDataSource.getRepository(Esibizione)
         .createQueryBuilder('esibizione')

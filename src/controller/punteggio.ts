@@ -11,8 +11,6 @@ export async function aggiungiPunteggio (data : IPunteggio) {
     const esibizioneRepo = AppDataSource.getRepository(Esibizione);
 
     const utente = await utenteRepo.findOneBy({id: data.utente});
-    const totaleUtenti = await utenteRepo.count()
-    console.log(totaleUtenti)
 
     const esibizione = await esibizioneRepo.findOneBy({id: data.esibizione});
 
@@ -28,9 +26,7 @@ export async function aggiungiPunteggio (data : IPunteggio) {
     });
 
     if (esiste) {
-        if (esiste.totale !== null) {
-            throw new ErrorApi("Il punteggio di questa esibizione è già stato inserito", 400, "SECONDO INSERIMENTO");
-        }
+
         const totale = (data.canzone ?? 0) +
             (data.coreografia ?? 0) +
             (data.scenografia ?? 0) +
@@ -45,8 +41,25 @@ export async function aggiungiPunteggio (data : IPunteggio) {
         esiste.interpretazione = data.interpretazione;
         esiste.totale = totale;
 
-        return await punteggioRepo.save(esiste);
+        await punteggioRepo.save(esiste);
+
+        if (await checkLastInsert(data.utente)){
+            await utenteRepo.update({ id : data.utente}, {allInserted: true})
+        }
+
     } else {
         throw new ErrorApi("Errore nell'inserimento", 400, "ERRORE INSERIMENTO");
     }
+}
+
+export async function checkLastInsert(userId : number){
+    const countExibizioni = await AppDataSource.getRepository(Esibizione).count()
+
+    const countPunteggi = await AppDataSource.createQueryBuilder(Punteggio, 'p')
+        .leftJoin('p.utente', 'u')
+        .where('u.id = :id', {id:userId})
+        .andWhere('p.totale is not NULL')
+        .getCount()
+
+    return countPunteggi === countExibizioni;
 }
