@@ -1,12 +1,20 @@
 import {AppDataSource} from "../index";
 import {Utente} from "../models/entity/Utente";
 import ErrorApi from "../@types/interface/errorApi";
-import {IUtente} from "../@types/interface/utente";
+import {IBodyModifica, IUtente} from "../@types/interface/utente";
 import {Esibizione} from "../models/entity/Esibizione";
 import {Punteggio} from "../models/entity/Punteggio";
 
 export async function listaUtenti() {
     return AppDataSource.getRepository(Utente).find()
+}
+
+export async function modificaUtente(data :IBodyModifica) {
+    await AppDataSource.getRepository(Utente).update(
+        {
+            id : data.id
+        },
+        {allInserted: data.value})
 }
 
 export async function aggiungiUtente(data: IUtente) {

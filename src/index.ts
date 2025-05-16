@@ -6,6 +6,7 @@ import {join} from "path";
 import fastifyCors from '@fastify/cors';
 import fastifySwagger from "@fastify/swagger";
 import {fastifySwaggerUi, FastifySwaggerUiOptions} from "@fastify/swagger-ui";
+import {importaScaletta} from "./controller/esibizioni";
 
 
 
@@ -21,6 +22,7 @@ const start = async ():Promise<void> => {
     await createDB()
     await AppDataSource.initialize()
 
+    await importaScaletta()
     await app.register(fastifySwagger),{
       routePrefix: '/docs',
       exposeRoute: true,

@@ -15,24 +15,6 @@ export class Esibizione {
     @Column('varchar')
     titolo!: string
 
-    @Column('integer', { nullable : true})
-    canzone_totale!: number;
-
-    @Column('integer', { nullable : true})
-    coreografia_totale!: number;
-
-    @Column('integer', { nullable : true})
-    scenografia_totale!: number;
-
-    @Column('integer', { nullable : true})
-    outfit_totale!: number;
-
-    @Column('integer', { nullable : true})
-    interpretazione_totale!: number;
-
-    @Column('integer', { nullable : true})
-    totale_totale!: number;
-
     @OneToMany(() => Punteggio, (punteggio) => punteggio.esibizione)
     punteggi!: Punteggio[];
 }
