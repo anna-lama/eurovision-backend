@@ -54,8 +54,8 @@ export async function calcolaClassificaPersonale (userID : number) {
 
 export async function calcolaClassificaTotale () : Promise<Totale> {
     const check = await AppDataSource.getRepository(Config).findOne({where: {id : 1}})
-    if (!check) {
-        return { votanti : 0, classifica : []}
+    if (!check || !check.abilitaTotale) {
+        return { votanti : 100, classifica : []}
     }
     const votanti = await AppDataSource.getRepository(Utente).count({
             where: {
@@ -73,7 +73,6 @@ export async function calcolaClassificaTotale () : Promise<Totale> {
         votanti : votanti,
         classifica: aggregaPunteggi(punteggiValidi).sort((a,b) => b.totale - a.totale)
     }
-
 }
 
 function aggregaPunteggi(punteggi: Punteggio[]):Calcoli[] {

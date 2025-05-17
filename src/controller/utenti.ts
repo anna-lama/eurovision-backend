@@ -65,6 +65,9 @@ export async function getUtente(data: IUtente) {
     if (!user) {
         throw new ErrorApi("L'utente inserito non è registrato", 403, "non esiste");
     }
+    if (user.pin !== data.pin) {
+        throw new ErrorApi("Il pin non è corretto", 403, "non esiste");
+    }
     return user
 }
 
