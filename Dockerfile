@@ -12,4 +12,4 @@ RUN npm install
 EXPOSE 3003
 
 # esegui il server
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "tsx"]
