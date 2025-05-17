@@ -7,6 +7,7 @@ import fastifyCors from '@fastify/cors';
 import fastifySwagger from "@fastify/swagger";
 import {fastifySwaggerUi, FastifySwaggerUiOptions} from "@fastify/swagger-ui";
 import {importaScaletta} from "./controller/esibizioni";
+import {Config} from "./models/entity/Config";
 
 
 
@@ -21,6 +22,11 @@ const start = async ():Promise<void> => {
   try {
     await createDB()
     await AppDataSource.initialize()
+
+    await AppDataSource.getRepository(Config).insert({
+      id: 1,
+      abilitaTotale: false
+    })
 
     await importaScaletta()
     await app.register(fastifySwagger),{
