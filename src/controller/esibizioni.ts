@@ -3,7 +3,7 @@ import { readFileSync, existsSync } from "fs";
 import { resolve } from "path";
 import ormconfig from "../ormConfig";
 import {Esibizione} from "../models/entity/Esibizione";
-import {AppDataSource} from "../index";
+import {AppDataSource} from "../data-source";
 
 const AppDataSourceScript = new DataSource(ormconfig);
 

@@ -1,4 +1,4 @@
-import {AppDataSource} from "../index";
+import {AppDataSource} from "../data-source";
 import {Utente} from "../models/entity/Utente";
 import ErrorApi from "../@types/interface/errorApi";
 import {IBodyModifica, IUtente} from "../@types/interface/utente";

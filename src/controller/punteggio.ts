@@ -1,4 +1,4 @@
-import {AppDataSource} from "../index";
+import {AppDataSource} from "../data-source";
 import {IPunteggio} from "../@types/interface/punteggio";
 import {Punteggio} from "../models/entity/Punteggio";
 import {Utente} from "../models/entity/Utente";

@@ -2,5 +2,4 @@ dist
 node_modules
 .vscode
 .idea
-.env.production
-.env.development
+.env*

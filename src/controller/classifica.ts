@@ -1,4 +1,4 @@
-import {AppDataSource} from "../index";
+import {AppDataSource} from "../data-source";
 import {Punteggio} from "../models/entity/Punteggio";
 import {Utente} from "../models/entity/Utente";
 import {Esibizione} from "../models/entity/Esibizione";
