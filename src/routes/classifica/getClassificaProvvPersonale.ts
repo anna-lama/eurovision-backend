@@ -7,13 +7,8 @@ enum Errore {
 }
 
 export default async function (fastify: FastifyInstance) {
-  fastify.get('/:utente', {
-    schema: {
-      tags: ['Classifica'],
-      description: 'Classifica Provvisoria: punteggi raccolti finora',
-      // response: classificaPersonaleResponseSchema.response
-    }
-  }, async (request: FastifyRequest<{ Params: { utente : number} }>, reply: FastifyReply) => {
+  fastify.get('/:utente',
+    async (request: FastifyRequest<{ Params: { utente : number} }>, reply: FastifyReply) => {
     try {
       const response = await calcolaClassificaPersonale(request.params.utente)
       return reply.status(200).send(new ResponseApi(response));
