@@ -16,6 +16,9 @@ export class Esibizione {
     @Column('varchar')
     titolo!: string
 
+    @Column('integer', { nullable: true })
+    ordine!: number | null
+
     @OneToMany(() => Punteggio, (punteggio) => punteggio.esibizione)
     punteggi!: Punteggio[];
 

@@ -3,7 +3,6 @@ import autoLoad from "@fastify/autoload";
 import { DataSource } from 'typeorm';
 import { join } from "path";
 import fastifyCors from '@fastify/cors';
-import { importaScaletta } from "./controller/esibizioni";
 import { Config } from "./models/entity/Config";
 
 
@@ -32,8 +31,6 @@ const start = async (): Promise<void> => {
       id: 1,
       abilitaTotale: false
     });
-
-    await importaScaletta();
 
     // Carica automaticamente le rotte dalla cartella "routes"
     await app.register(autoLoad, {
