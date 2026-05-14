@@ -3,7 +3,7 @@ import {Punteggio} from "../models/entity/Punteggio";
 import {Utente} from "../models/entity/Utente";
 import {Esibizione} from "../models/entity/Esibizione";
 import ErrorApi from "../@types/interface/errorApi";
-import {Config} from "../models/entity/Config";
+import {Competizione} from "../models/entity/Competizione";
 
 interface Totale {
     votanti: number,
@@ -19,7 +19,7 @@ interface Calcoli {
     interpretazione: number,
     totale: number
 }
-export async function calcolaClassificaPersonale (userID : number) {
+export async function calcolaClassificaPersonale (userID : number, competizioneID?: number) {
     const punteggioRepo = AppDataSource.getRepository(Punteggio);
     const utenteRepo = AppDataSource.getRepository(Utente);
 
@@ -28,11 +28,20 @@ export async function calcolaClassificaPersonale (userID : number) {
         throw new ErrorApi('L\'utente o l\'esibizione non sono stati trovati', 400, "DANNO ESTERNO")
 
     }
-    const listaPunteggi = await punteggioRepo.find({
-        where: {utente: {id: userID}},
-        // order: {totale: "DESC"},
-        relations: ['esibizione']  // opzionale: include anche i dati dell'esibizione
-    });
+    const query = punteggioRepo
+        .createQueryBuilder('punteggio')
+        .leftJoinAndSelect('punteggio.esibizione', 'esibizione')
+        .leftJoin('esibizione.competizione', 'competizione')
+        .where('punteggio."utenteId" = :utenteId', { utenteId: userID });
+
+    if (competizioneID) {
+        await getCompetizioneOrThrow(competizioneID);
+        query.andWhere('competizione.id = :competizioneId', {
+            competizioneId: competizioneID
+        });
+    }
+
+    const listaPunteggi = await query.getMany();
 
     const listaConTotali = listaPunteggi.map(p => {
         const totale =
@@ -52,25 +61,31 @@ export async function calcolaClassificaPersonale (userID : number) {
 }
 
 
-export async function calcolaClassificaTotale () : Promise<Totale> {
-    const check = await AppDataSource.getRepository(Config).findOne({where: {id : 1}})
-    if (!check || !check.abilitaTotale) {
+export async function calcolaClassificaTotale (competizioneID?: number) : Promise<Totale> {
+    if (!competizioneID) {
         return { votanti : 100, classifica : []}
     }
-    const votanti = await AppDataSource.getRepository(Utente).count({
-            where: {
-                allInserted: true
-            }
-        }
-    )
+
+    const competizione = await getCompetizioneOrThrow(competizioneID);
+    if (!competizione.abilitaTotale) {
+        return { votanti : 0, classifica : []}
+    }
+
+    const utentiCompletiIds = await getUtentiCompletiIds(competizioneID);
+    if (!utentiCompletiIds.length) {
+        return { votanti : 0, classifica : []}
+    }
+
     const punteggiValidi = await AppDataSource.createQueryBuilder(Punteggio, 'p')
         .leftJoinAndSelect('p.esibizione', 'es')
         .leftJoinAndSelect('p.utente', 'u')
-        .where('u."allInserted" = TRUE')
+        .leftJoin('es.competizione', 'competizione')
+        .where('competizione.id = :competizioneId', { competizioneId: competizioneID })
+        .andWhere('u.id IN (:...utentiCompletiIds)', { utentiCompletiIds })
         .getMany()
 
     return {
-        votanti : votanti,
+        votanti : utentiCompletiIds.length,
         classifica: aggregaPunteggi(punteggiValidi).sort((a,b) => b.totale - a.totale)
     }
 }
@@ -105,22 +120,34 @@ function aggregaPunteggi(punteggi: Punteggio[]):Calcoli[] {
     return Array.from(mappa.values());
 }
 
-export async function getHomeList (userID : number) {
+export async function getHomeList (userID : number, competizioneID?: number) {
     const utenteRepo = AppDataSource.getRepository(Utente);
 
     const utente = await utenteRepo.findOneBy({id: userID});
     if (!utente) {
         throw new ErrorApi('L\'utente non è stato trovato', 400, "DANNO ESTERNO")
     }
-    const esibizioni = await AppDataSource.getRepository(Esibizione)
+    if (competizioneID) {
+        await getCompetizioneOrThrow(competizioneID);
+    }
+
+    const query = AppDataSource.getRepository(Esibizione)
         .createQueryBuilder('esibizione')
         .leftJoinAndSelect('esibizione.punteggi','punteggio')
+        .leftJoin('esibizione.competizione', 'competizione')
         .where(
-            'punteggio.utente = :utenteId',
+            'punteggio."utenteId" = :utenteId',
             { utenteId: userID }
         )
-        .orderBy('esibizione.id')
-        .getMany();
+        .orderBy('esibizione.id');
+
+    if (competizioneID) {
+        query.andWhere('competizione.id = :competizioneId', {
+            competizioneId: competizioneID
+        });
+    }
+
+    const esibizioni = await query.getMany();
 
     const esibizioniConTotaleEInCorso = esibizioni.map((x) => {
         const punteggio = x.punteggi[0];
@@ -140,10 +167,51 @@ export async function getHomeList (userID : number) {
         };
     });
 
-    const primaSenzaPunteggio = esibizioniConTotaleEInCorso.find(x => x.punteggi[0].totale === 0 && x.punteggi[0].canzone === null);
+    const primaSenzaPunteggio = esibizioniConTotaleEInCorso.find(x => x.punteggi[0]?.totale === 0 && x.punteggi[0]?.canzone === null);
     if (primaSenzaPunteggio) {
         primaSenzaPunteggio.inCorso = true;
     }
 
     return esibizioniConTotaleEInCorso;
+}
+
+async function getCompetizioneOrThrow(competizioneID: number) {
+    const competizione = await AppDataSource.getRepository(Competizione).findOneBy({
+        id: competizioneID
+    });
+
+    if (!competizione) {
+        throw new ErrorApi(
+            "La competizione non è stata trovata",
+            404,
+            "COMPETIZIONE_NON_TROVATA"
+        );
+    }
+
+    return competizione;
+}
+
+async function getUtentiCompletiIds(competizioneID: number) {
+    const esibizioniTotali = await AppDataSource.getRepository(Esibizione)
+        .createQueryBuilder('esibizione')
+        .leftJoin('esibizione.competizione', 'competizione')
+        .where('competizione.id = :competizioneId', { competizioneId: competizioneID })
+        .getCount();
+
+    if (esibizioniTotali === 0) {
+        return [];
+    }
+
+    const utentiCompleti = await AppDataSource.createQueryBuilder(Punteggio, 'p')
+        .select('u.id', 'id')
+        .leftJoin('p.utente', 'u')
+        .leftJoin('p.esibizione', 'es')
+        .leftJoin('es.competizione', 'competizione')
+        .where('competizione.id = :competizioneId', { competizioneId: competizioneID })
+        .andWhere('p.totale IS NOT NULL')
+        .groupBy('u.id')
+        .having('COUNT(p.id) = :esibizioniTotali', { esibizioniTotali })
+        .getRawMany<{ id: number }>();
+
+    return utentiCompleti.map((utente) => Number(utente.id));
 }
