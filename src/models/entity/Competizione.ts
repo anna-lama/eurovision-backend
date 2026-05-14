@@ -19,8 +19,11 @@ export class Competizione {
     @Column('varchar', { nullable: true })
     paeseOspitante!: string | null
 
-    @Column('varchar', { default: false })
+    @Column('boolean', { default: false })
     closed!: boolean
+
+    @Column('boolean', { default: false })
+    abilitaTotale!: boolean
 
     @OneToMany(() => Esibizione, (esibizione) => esibizione.competizione)
     esibizioni!: Esibizione[];
