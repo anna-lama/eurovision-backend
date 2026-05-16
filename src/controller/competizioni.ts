@@ -2,6 +2,7 @@ import { AppDataSource } from "../data-source";
 import { Competizione } from "../models/entity/Competizione";
 import ErrorApi from "../@types/interface/errorApi";
 import { Utente } from "../models/entity/Utente";
+import { ICompetizione } from "../@types/interface/competizione";
 
 /**
  * Lista competizioni
@@ -44,6 +45,30 @@ export async function getListaCompetizioniAdmin() {
         .orderBy('competizione.anno', 'DESC')
         .addOrderBy('competizione.id', 'DESC')
         .getMany();
+}
+
+export async function creaCompetizione(data: ICompetizione) {
+    const nome = data.nome.trim();
+
+    if (!nome) {
+        throw new ErrorApi(
+            "Il nome della competizione è obbligatorio",
+            400,
+            "NOME_COMPETIZIONE_OBBLIGATORIO"
+        );
+    }
+
+    const competizioneRepo = AppDataSource.getRepository(Competizione);
+    const nuovaCompetizione = competizioneRepo.create({
+        nome,
+        anno: data.anno,
+        citta: normalizeNullableString(data.citta),
+        paeseOspitante: normalizeNullableString(data.paeseOspitante),
+        closed: data.closed ?? false,
+        abilitaTotale: data.abilitaTotale ?? false
+    });
+
+    return await competizioneRepo.save(nuovaCompetizione);
 }
 
 export async function cambiaAbilitaTotaleCompetizione(
@@ -95,4 +120,9 @@ export async function getCompetizioniByUtente(userID: number) {
         .distinct(true)
         .orderBy('competizione.anno', 'DESC')
         .getMany();
+}
+
+function normalizeNullableString(value?: string | null) {
+    const normalized = value?.trim();
+    return normalized ? normalized : null;
 }
