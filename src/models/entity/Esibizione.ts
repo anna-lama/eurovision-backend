@@ -1,5 +1,6 @@
-import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn} from "typeorm";
 import {Punteggio} from "./Punteggio";
+import { Competizione } from "./Competizione";
 
 @Entity({ name: "esibizioni" })
 export class Esibizione {
@@ -15,6 +16,16 @@ export class Esibizione {
     @Column('varchar')
     titolo!: string
 
+    @Column('integer', { nullable: true })
+    ordine!: number | null
+
     @OneToMany(() => Punteggio, (punteggio) => punteggio.esibizione)
     punteggi!: Punteggio[];
+
+    @ManyToOne(
+      () => Competizione,
+      (competizione) => competizione.esibizioni,
+      { nullable: true } // importante per la migrazione iniziale
+    )
+    competizione!: Competizione | null;
 }

@@ -1,5 +1,6 @@
 import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from "typeorm";
 import {Punteggio} from "./Punteggio";
+import {PartecipazioneCompetizione} from "./PartecipazioneCompetizione";
 
 @Entity({ name: "utenti" })
 export class Utente {
@@ -13,9 +14,15 @@ export class Utente {
     pin!: string
 
     @Column('boolean', {default:false})
-    allInserted!: boolean
+    isAdmin!: boolean
 
     @OneToMany(() => Punteggio, (punteggio) => punteggio.utente)
     punteggi!: Punteggio[];
+
+    @OneToMany(
+        () => PartecipazioneCompetizione,
+        (partecipazioneCompetizione) => partecipazioneCompetizione.utente
+    )
+    partecipazioniCompetizioni!: PartecipazioneCompetizione[];
 
 }

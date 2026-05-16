@@ -1,6 +1,6 @@
 import {FastifyInstance, FastifyReply, FastifyRequest} from 'fastify';
 import ResponseApi from "../../@types/responseApi";
-import {AppDataSource} from "../../index";
+import {AppDataSource} from "../../data-source";
 import {Config} from "../../models/entity/Config";
 
 enum Errore {

@@ -3,7 +3,11 @@ export interface IUtente{
     pin : string
 }
 
-export interface IBodyModifica {
+export interface IBodyEsclusioneTotale {
+    esclusoTotale: boolean
+}
+
+export interface IBodyModificaPassword {
     id: number,
-    value: boolean
+    pin: string
 }
