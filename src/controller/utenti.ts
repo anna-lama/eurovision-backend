@@ -1,7 +1,7 @@
 import {AppDataSource} from "../data-source";
 import {Utente} from "../models/entity/Utente";
 import ErrorApi from "../@types/interface/errorApi";
-import {IBodyModifica, IBodyModificaPassword, IUtente} from "../@types/interface/utente";
+import {IBodyModificaPassword, IUtente} from "../@types/interface/utente";
 import { Competizione } from "../models/entity/Competizione";
 import { Punteggio } from "../models/entity/Punteggio";
 import { Esibizione } from "../models/entity/Esibizione";
@@ -71,14 +71,6 @@ export async function listaUtentiByCompetizione(competizioneID: number) {
             Number(utente.punteggiInseriti) === esibizioniTotali,
         esclusoTotale: utente.esclusoTotale === true || utente.esclusoTotale === 'true'
     }));
-}
-
-export async function modificaUtente(data :IBodyModifica) {
-    await AppDataSource.getRepository(Utente).update(
-        {
-            id : data.id
-        },
-        {allInserted: data.value})
 }
 
 export async function modificaPasswordUtente(data: IBodyModificaPassword) {

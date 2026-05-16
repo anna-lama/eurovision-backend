@@ -1,7 +1,7 @@
 import {FastifyInstance, FastifyReply, FastifyRequest} from 'fastify';
 import ResponseApi from "../../@types/responseApi";
-import {IBodyModifica, IBodyModificaPassword} from "../../@types/interface/utente";
-import {modificaPasswordUtente, modificaUtente} from "../../controller/utenti";
+import {IBodyModificaPassword} from "../../@types/interface/utente";
+import {modificaPasswordUtente} from "../../controller/utenti";
 import S from "fluent-json-schema";
 
 enum Errore {
@@ -9,23 +9,6 @@ enum Errore {
 }
 
 export default async function (fastify: FastifyInstance) {
-    fastify.patch('/edit', {
-        schema: {
-            tags: ['Utente'],
-            description: 'Modifica manuale del campo allInserted',
-            response: {
-                // '200': serializeResponseLogin
-            }
-        }
-    }, async (request: FastifyRequest<{ Body: IBodyModifica }>, reply: FastifyReply) => {
-        try {
-            await modificaUtente(request.body)
-            return reply.status(200).send(new ResponseApi('ok'));
-        } catch (error){
-            return fastify.errorResponse(reply,error,Errore.GENERICO)
-        }
-    })
-
     fastify.patch('/password', {
         schema: {
             tags: ['Utente'],

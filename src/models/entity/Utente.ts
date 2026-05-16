@@ -13,9 +13,6 @@ export class Utente {
     @Column('varchar', {nullable:true})
     pin!: string
 
-    @Column('boolean', {default:false})
-    allInserted!: boolean
-
     @OneToMany(() => Punteggio, (punteggio) => punteggio.utente)
     punteggi!: Punteggio[];
 

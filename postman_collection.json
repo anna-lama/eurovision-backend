@@ -149,25 +149,6 @@
       }
     },
     {
-      "name": "Utenti - Modifica",
-      "request": {
-        "method": "PATCH",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"id\": 1,\n  \"value\": true\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/utenti/edit",
-          "host": ["{{baseUrl}}"],
-          "path": ["utenti", "edit"]
-        },
-        "description": "Modifica manuale del campo allInserted per un utente."
-      }
-    },
-    {
   "name": "Competizioni - Lista",
   "request": {
     "method": "GET",
