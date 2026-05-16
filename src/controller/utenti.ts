@@ -117,7 +117,7 @@ export async function promuoviAdminUtente(userID: number) {
 }
 
 export async function aggiungiUtente(data: IUtente) {
-    data.nome = data.nome.toUpperCase();
+    data.nome = data.nome.toUpperCase().trim();
 
     const utenteRepo = AppDataSource.getRepository(Utente);
 
@@ -139,7 +139,7 @@ export async function aggiungiUtente(data: IUtente) {
 }
 
 export async function getUtente(data: IUtente) {
-    data.nome = data.nome.toUpperCase()
+    data.nome = data.nome.toUpperCase().trim();
     const utenteRepo = AppDataSource.getRepository(Utente);
 
     const user = await utenteRepo.findOneBy({nome: data.nome});
