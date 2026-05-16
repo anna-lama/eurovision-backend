@@ -97,6 +97,25 @@ export async function modificaPasswordUtente(data: IBodyModificaPassword) {
     );
 }
 
+export async function promuoviAdminUtente(userID: number) {
+    const utenteRepo = AppDataSource.getRepository(Utente);
+    const utente = await utenteRepo.findOneBy({
+        id: userID
+    });
+
+    if (!utente) {
+        throw new ErrorApi(
+            "Utente non trovato",
+            404,
+            "UTENTE_NON_TROVATO"
+        );
+    }
+
+    utente.isAdmin = true;
+
+    return await utenteRepo.save(utente);
+}
+
 export async function aggiungiUtente(data: IUtente) {
     data.nome = data.nome.toUpperCase();
 

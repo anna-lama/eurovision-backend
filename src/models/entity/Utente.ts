@@ -13,6 +13,9 @@ export class Utente {
     @Column('varchar', {nullable:true})
     pin!: string
 
+    @Column('boolean', {default:false})
+    isAdmin!: boolean
+
     @OneToMany(() => Punteggio, (punteggio) => punteggio.utente)
     punteggi!: Punteggio[];
 

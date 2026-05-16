@@ -3,7 +3,7 @@
     "_postman_id": "eurovision-backend-collection",
     "name": "Eurovision Backend API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Collection generata automaticamente per il backend Eurovision."
+    "description": "Collection aggiornata per il backend Eurovision."
   },
   "item": [
     {
@@ -22,31 +22,7 @@
           "host": ["{{baseUrl}}"],
           "path": ["auth"]
         },
-        "description": "Login utente, restituisce token."
-      }
-    },
-    {
-      "name": "Classifica - Personale",
-      "request": {
-        "method": "GET",
-        "url": {
-          "raw": "{{baseUrl}}/classifica/:utente",
-          "host": ["{{baseUrl}}"],
-          "path": ["classifica", ":utente"]
-        },
-        "description": "Classifica provvisoria personale."
-      }
-    },
-    {
-      "name": "Classifica - Totale",
-      "request": {
-        "method": "GET",
-        "url": {
-          "raw": "{{baseUrl}}/classifica",
-          "host": ["{{baseUrl}}"],
-          "path": ["classifica"]
-        },
-        "description": "Classifica provvisoria totale."
+        "description": "Login generico auth."
       }
     },
     {
@@ -54,11 +30,145 @@
       "request": {
         "method": "GET",
         "url": {
-          "raw": "{{baseUrl}}/classifica/home/:utente",
+          "raw": "{{baseUrl}}/classifica/competizione/:competizione/home/:utente",
           "host": ["{{baseUrl}}"],
-          "path": ["classifica", "home", ":utente"]
+          "path": ["classifica", "competizione", ":competizione", "home", ":utente"],
+          "variable": [
+            { "key": "competizione", "value": "1" },
+            { "key": "utente", "value": "1" }
+          ]
         },
-        "description": "Lista punteggi raccolti finora per utente."
+        "description": "Lista home per utente e competizione."
+      }
+    },
+    {
+      "name": "Classifica - Personale",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/classifica/competizione/:competizione/personale/:utente",
+          "host": ["{{baseUrl}}"],
+          "path": ["classifica", "competizione", ":competizione", "personale", ":utente"],
+          "variable": [
+            { "key": "competizione", "value": "1" },
+            { "key": "utente", "value": "1" }
+          ]
+        },
+        "description": "Classifica personale per utente e competizione."
+      }
+    },
+    {
+      "name": "Classifica - Totale",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/classifica/competizione/:competizione/totale",
+          "host": ["{{baseUrl}}"],
+          "path": ["classifica", "competizione", ":competizione", "totale"],
+          "variable": [
+            { "key": "competizione", "value": "1" }
+          ]
+        },
+        "description": "Classifica totale per competizione."
+      }
+    },
+    {
+      "name": "Competizioni - Lista Admin",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/competizioni",
+          "host": ["{{baseUrl}}"],
+          "path": ["competizioni"]
+        },
+        "description": "Ottieni la lista di tutte le competizioni."
+      }
+    },
+    {
+      "name": "Competizioni - Crea",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Eurovision 2026\",\n  \"anno\": 2026,\n  \"citta\": \"Vienna\",\n  \"paeseOspitante\": \"Austria\",\n  \"closed\": false,\n  \"abilitaTotale\": false\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/competizioni",
+          "host": ["{{baseUrl}}"],
+          "path": ["competizioni"]
+        },
+        "description": "Crea una nuova competizione."
+      }
+    },
+    {
+      "name": "Competizioni - Aperte per Utente",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/competizioni/aperte/:utente",
+          "host": ["{{baseUrl}}"],
+          "path": ["competizioni", "aperte", ":utente"],
+          "variable": [
+            { "key": "utente", "value": "1" }
+          ]
+        },
+        "description": "Ottieni le competizioni aperte per un utente."
+      }
+    },
+    {
+      "name": "Competizioni - Cambia Totale",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"abilitaTotale\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/competizioni/:competizione/totale",
+          "host": ["{{baseUrl}}"],
+          "path": ["competizioni", ":competizione", "totale"],
+          "variable": [
+            { "key": "competizione", "value": "1" }
+          ]
+        },
+        "description": "Abilita o disabilita il totale per una competizione."
+      }
+    },
+    {
+      "name": "Competizioni - By Utente",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/competizioni/utente/:utente",
+          "host": ["{{baseUrl}}"],
+          "path": ["competizioni", "utente", ":utente"],
+          "variable": [
+            { "key": "utente", "value": "1" }
+          ]
+        },
+        "description": "Ottieni le competizioni a cui l'utente è registrato."
+      }
+    },
+    {
+      "name": "Competizioni - Registra Utente",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "{{baseUrl}}/competizioni/:competizione/utente/:utente",
+          "host": ["{{baseUrl}}"],
+          "path": ["competizioni", ":competizione", "utente", ":utente"],
+          "variable": [
+            { "key": "competizione", "value": "1" },
+            { "key": "utente", "value": "1" }
+          ]
+        },
+        "description": "Registra un utente a una competizione creando i punteggi vuoti."
       }
     },
     {
@@ -76,7 +186,26 @@
             { "key": "total", "value": "true" }
           ]
         },
-        "description": "Abilita/disabilita la classifica totale."
+        "description": "Abilita o disabilita la classifica totale globale."
+      }
+    },
+    {
+      "name": "Esibizioni - Inserisci Scaletta",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[\n  {\n    \"cantante\": \"Artista\",\n    \"nazione\": \"Italia\",\n    \"titolo\": \"Canzone\",\n    \"ordine\": 1,\n    \"competizione\": 1\n  }\n]"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/esibizioni/add",
+          "host": ["{{baseUrl}}"],
+          "path": ["esibizioni", "add"]
+        },
+        "description": "Inserisce la scaletta delle esibizioni."
       }
     },
     {
@@ -95,7 +224,7 @@
           "host": ["{{baseUrl}}"],
           "path": ["punteggio", "add"]
         },
-        "description": "Aggiungi punteggio per esibizione."
+        "description": "Inserisce o aggiorna il punteggio per una esibizione."
       }
     },
     {
@@ -107,26 +236,14 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"nome\": \"Mario\",\n  \"pin\": 1234\n}"
+          "raw": "{\n  \"nome\": \"Mario\",\n  \"pin\": \"1234\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/utenti/add",
           "host": ["{{baseUrl}}"],
           "path": ["utenti", "add"]
         },
-        "description": "Aggiungi un nuovo utente."
-      }
-    },
-    {
-      "name": "Utenti - Lista",
-      "request": {
-        "method": "GET",
-        "url": {
-          "raw": "{{baseUrl}}/utenti/lista",
-          "host": ["{{baseUrl}}"],
-          "path": ["utenti", "lista"]
-        },
-        "description": "Ottieni la lista degli utenti."
+        "description": "Aggiunge un nuovo utente."
       }
     },
     {
@@ -138,7 +255,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"nome\": \"Mario\",\n  \"pin\": 1234\n}"
+          "raw": "{\n  \"nome\": \"Mario\",\n  \"pin\": \"1234\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/utenti/login",
@@ -149,53 +266,89 @@
       }
     },
     {
-  "name": "Competizioni - Lista",
-  "request": {
-    "method": "GET",
-    "url": {
-      "raw": "{{baseUrl}}/competizioni",
-      "host": ["{{baseUrl}}"],
-      "path": ["competizioni"]
+      "name": "Utenti - Lista Tutti",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/utenti/lista",
+          "host": ["{{baseUrl}}"],
+          "path": ["utenti", "lista"]
+        },
+        "description": "Ottiene la lista di tutti gli utenti."
+      }
     },
-    "description": "Ottieni la lista di tutte le competizioni disponibili."
-  }
-},
-{
-  "name": "Competizioni - Esibizioni per competizione",
-  "request": {
-    "method": "GET",
-    "url": {
-      "raw": "{{baseUrl}}/competizioni/:competizione/esibizioni/:utente",
-      "host": ["{{baseUrl}}"],
-      "path": ["competizioni", ":competizione", "esibizioni", ":utente"]
+    {
+      "name": "Utenti - Lista per Competizione",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/utenti/competizione/:competizione",
+          "host": ["{{baseUrl}}"],
+          "path": ["utenti", "competizione", ":competizione"],
+          "variable": [
+            { "key": "competizione", "value": "1" }
+          ]
+        },
+        "description": "Ottiene utenti e stato completamento per una competizione."
+      }
     },
-    "description": "Ottieni le esibizioni di una competizione con i punteggi dell'utente."
-  }
-},
-{
-  "name": "Competizioni - Registrati",
-  "request": {
-    "method": "POST",
-    "url": {
-      "raw": "{{baseUrl}}/competizioni/:competizione/iscrizione/:utente",
-      "host": ["{{baseUrl}}"],
-      "path": ["competizioni", ":competizione", "iscrizione", ":utente"]
+    {
+      "name": "Utenti - Esclusione Totale",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"esclusoTotale\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/utenti/competizione/:competizione/:utente/escluso",
+          "host": ["{{baseUrl}}"],
+          "path": ["utenti", "competizione", ":competizione", ":utente", "escluso"],
+          "variable": [
+            { "key": "competizione", "value": "1" },
+            { "key": "utente", "value": "1" }
+          ]
+        },
+        "description": "Include o esclude un utente dalla classifica totale di una competizione."
+      }
     },
-    "description": "Registra un utente a una competizione creando i punteggi vuoti."
-  }
-},
-{
-  "name": "Utenti - Competizioni registrate",
-  "request": {
-    "method": "GET",
-    "url": {
-      "raw": "{{baseUrl}}/utenti/:utente/competizioni",
-      "host": ["{{baseUrl}}"],
-      "path": ["utenti", ":utente", "competizioni"]
+    {
+      "name": "Utenti - Promuovi Admin",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "{{baseUrl}}/utenti/admin/:utente",
+          "host": ["{{baseUrl}}"],
+          "path": ["utenti", "admin", ":utente"],
+          "variable": [
+            { "key": "utente", "value": "1" }
+          ]
+        },
+        "description": "Promuove un utente ad admin."
+      }
     },
-    "description": "Ottieni la lista delle competizioni a cui l'utente è già registrato."
-  }
-}
+    {
+      "name": "Utenti - Modifica Password",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": 1,\n  \"pin\": \"1234\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/utenti/password",
+          "host": ["{{baseUrl}}"],
+          "path": ["utenti", "password"]
+        },
+        "description": "Modifica il pin/password di un utente."
+      }
+    }
   ],
   "variable": [
     {
