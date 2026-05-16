@@ -7,7 +7,9 @@ import { Config } from "./models/entity/Config";
 
 
 const corsOptions = {
-  origin: '*'
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control']
 };
 // Plugins will initialize the shared DataSource (see src/data-source.ts)
 
@@ -32,13 +34,13 @@ const start = async (): Promise<void> => {
       abilitaTotale: false
     });
 
+    await app.register(fastifyCors, corsOptions);
+
     // Carica automaticamente le rotte dalla cartella "routes"
     await app.register(autoLoad, {
       dir: join(__dirname, 'routes'),
       dirNameRoutePrefix: true // Specifica che voglio utilizzare il nome delle cartelle all'interno delle rotte (true) auth/login
     });
-
-    await app.register(fastifyCors, corsOptions);
 
     await app.listen({
       port: FASTIFY_PORT,

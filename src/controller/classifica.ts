@@ -4,6 +4,7 @@ import {Utente} from "../models/entity/Utente";
 import {Esibizione} from "../models/entity/Esibizione";
 import ErrorApi from "../@types/interface/errorApi";
 import {Competizione} from "../models/entity/Competizione";
+import {PartecipazioneCompetizione} from "../models/entity/PartecipazioneCompetizione";
 
 interface Totale {
     votanti: number,
@@ -207,8 +208,14 @@ async function getUtentiCompletiIds(competizioneID: number) {
         .leftJoin('p.utente', 'u')
         .leftJoin('p.esibizione', 'es')
         .leftJoin('es.competizione', 'competizione')
+        .leftJoin(
+            PartecipazioneCompetizione,
+            'partecipazione',
+            'partecipazione."utenteId" = u.id AND partecipazione."competizioneId" = competizione.id'
+        )
         .where('competizione.id = :competizioneId', { competizioneId: competizioneID })
         .andWhere('p.totale IS NOT NULL')
+        .andWhere('(partecipazione.id IS NULL OR partecipazione."esclusoTotale" = false)')
         .groupBy('u.id')
         .having('COUNT(p.id) = :esibizioniTotali', { esibizioniTotali })
         .getRawMany<{ id: number }>();

@@ -1,6 +1,11 @@
 import {FastifyInstance, FastifyReply, FastifyRequest} from 'fastify';
 import ResponseApi from "../../@types/responseApi";
-import {listaUtenti, listaUtentiByCompetizione} from "../../controller/utenti";
+import {
+  cambiaEsclusioneTotaleUtente,
+  listaUtenti,
+  listaUtentiByCompetizione
+} from "../../controller/utenti";
+import {IBodyEsclusioneTotale} from "../../@types/interface/utente";
 
 enum Errore {
   GENERICO = 'ERR_LOG_LOGIN_1'
@@ -16,6 +21,26 @@ export default async function (fastify: FastifyInstance) {
       return fastify.errorResponse(reply,error,Errore.GENERICO)
     }
   })
+
+  fastify.put('/competizione/:competizione/:utente/escluso',
+    async (request: FastifyRequest<{
+      Params: {
+        competizione: number,
+        utente: number
+      },
+      Body: IBodyEsclusioneTotale
+    }>, reply: FastifyReply) => {
+      try {
+        const response = await cambiaEsclusioneTotaleUtente(
+          Number(request.params.utente),
+          Number(request.params.competizione),
+          request.body.esclusoTotale
+        )
+        return reply.status(200).send(new ResponseApi(response));
+      } catch (error){
+        return fastify.errorResponse(reply,error,Errore.GENERICO)
+      }
+    })
 
   fastify.get('/lista', {
     schema: {

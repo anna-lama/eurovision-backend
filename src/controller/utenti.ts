@@ -1,10 +1,11 @@
 import {AppDataSource} from "../data-source";
 import {Utente} from "../models/entity/Utente";
 import ErrorApi from "../@types/interface/errorApi";
-import {IBodyModifica, IUtente} from "../@types/interface/utente";
+import {IBodyModifica, IBodyModificaPassword, IUtente} from "../@types/interface/utente";
 import { Competizione } from "../models/entity/Competizione";
 import { Punteggio } from "../models/entity/Punteggio";
 import { Esibizione } from "../models/entity/Esibizione";
+import { PartecipazioneCompetizione } from "../models/entity/PartecipazioneCompetizione";
 
 export async function listaUtenti() {
     return AppDataSource.getRepository(Utente).find()
@@ -34,22 +35,30 @@ export async function listaUtentiByCompetizione(competizioneID: number) {
         .innerJoin('utente.punteggi', 'punteggio')
         .innerJoin('punteggio.esibizione', 'esibizione')
         .innerJoin('esibizione.competizione', 'competizione')
+        .leftJoin(
+            'utente.partecipazioniCompetizioni',
+            'partecipazione',
+            'partecipazione."competizioneId" = competizione.id'
+        )
         .select('utente.id', 'id')
         .addSelect('utente.nome', 'nome')
         .addSelect('utente.pin', 'pin')
         .addSelect('COUNT(punteggio.id)', 'punteggiTotali')
         .addSelect('COUNT(punteggio.id) FILTER (WHERE punteggio.totale IS NOT NULL)', 'punteggiInseriti')
+        .addSelect('COALESCE(partecipazione."esclusoTotale", false)', 'esclusoTotale')
         .where('competizione.id = :competizioneId', { competizioneId: competizioneID })
         .groupBy('utente.id')
         .addGroupBy('utente.nome')
         .addGroupBy('utente.pin')
+        .addGroupBy('partecipazione.esclusoTotale')
         .orderBy('utente.nome', 'ASC')
         .getRawMany<{
             id: number,
             nome: string,
             pin: string | null,
             punteggiTotali: string,
-            punteggiInseriti: string
+            punteggiInseriti: string,
+            esclusoTotale: boolean | string
         }>();
 
     return utenti.map((utente) => ({
@@ -59,7 +68,8 @@ export async function listaUtentiByCompetizione(competizioneID: number) {
         allInserted:
             esibizioniTotali > 0 &&
             Number(utente.punteggiTotali) === esibizioniTotali &&
-            Number(utente.punteggiInseriti) === esibizioniTotali
+            Number(utente.punteggiInseriti) === esibizioniTotali,
+        esclusoTotale: utente.esclusoTotale === true || utente.esclusoTotale === 'true'
     }));
 }
 
@@ -69,6 +79,30 @@ export async function modificaUtente(data :IBodyModifica) {
             id : data.id
         },
         {allInserted: data.value})
+}
+
+export async function modificaPasswordUtente(data: IBodyModificaPassword) {
+    const utenteRepo = AppDataSource.getRepository(Utente);
+    const utente = await utenteRepo.findOneBy({
+        id: data.id
+    });
+
+    if (!utente) {
+        throw new ErrorApi(
+            "Utente non trovato",
+            404,
+            "UTENTE_NON_TROVATO"
+        );
+    }
+
+    await utenteRepo.update(
+        {
+            id: data.id
+        },
+        {
+            pin: data.pin
+        }
+    );
 }
 
 export async function aggiungiUtente(data: IUtente) {
@@ -114,6 +148,7 @@ export async function registraUtenteACompetizione(
     const utenteRepo = AppDataSource.getRepository(Utente);
     const competizioneRepo = AppDataSource.getRepository(Competizione);
     const punteggioRepo = AppDataSource.getRepository(Punteggio);
+    const partecipazioneRepo = AppDataSource.getRepository(PartecipazioneCompetizione);
 
     const utente = await utenteRepo.findOneBy({
         id: userID
@@ -190,8 +225,70 @@ export async function registraUtenteACompetizione(
     });
 
     await punteggioRepo.save(punteggi);
+    await partecipazioneRepo.save(
+        partecipazioneRepo.create({
+            utente,
+            competizione,
+            esclusoTotale: false
+        })
+    );
 
     return {
         message: 'Registrazione completata'
     };
+}
+
+export async function cambiaEsclusioneTotaleUtente(
+    userID: number,
+    competizioneID: number,
+    esclusoTotale: boolean
+) {
+    const utenteRepo = AppDataSource.getRepository(Utente);
+    const competizioneRepo = AppDataSource.getRepository(Competizione);
+    const partecipazioneRepo = AppDataSource.getRepository(PartecipazioneCompetizione);
+
+    const utente = await utenteRepo.findOneBy({
+        id: userID
+    });
+
+    if (!utente) {
+        throw new ErrorApi(
+            "Utente non trovato",
+            404,
+            "UTENTE_NON_TROVATO"
+        );
+    }
+
+    const competizione = await competizioneRepo.findOneBy({
+        id: competizioneID
+    });
+
+    if (!competizione) {
+        throw new ErrorApi(
+            "Competizione non trovata",
+            404,
+            "COMPETIZIONE_NON_TROVATA"
+        );
+    }
+
+    let partecipazione = await partecipazioneRepo
+        .createQueryBuilder('partecipazione')
+        .leftJoinAndSelect('partecipazione.utente', 'utente')
+        .leftJoinAndSelect('partecipazione.competizione', 'competizione')
+        .where('utente.id = :utenteId', { utenteId: userID })
+        .andWhere('competizione.id = :competizioneId', { competizioneId: competizioneID })
+        .getOne();
+
+    if (!partecipazione) {
+        partecipazione = partecipazioneRepo.create({
+            utente,
+            competizione
+        });
+    }
+
+    partecipazione.esclusoTotale = esclusoTotale;
+
+    await partecipazioneRepo.save(partecipazione);
+
+    return 'ok';
 }
